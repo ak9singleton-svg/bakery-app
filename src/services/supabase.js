@@ -27,7 +27,7 @@ export const isAdmin = (telegramUser) => {
 // В продакшене нужно использовать Supabase Edge Functions
 export const sendNotification = async (chatId, message, parseMode = 'HTML') => {
   try {
-    const BOT_TOKEN = import.meta.env.VITE_BOT_TOKEN || '8256833464:AAHBzZdX9zRIlxSysqTgoMxdkrzux9vbzNk'
+    const BOT_TOKEN = '8256833464:AAHBzZdX9zRIlxSysqTgoMxdkrzux9vbzNk'
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
