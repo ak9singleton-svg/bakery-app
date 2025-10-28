@@ -9,6 +9,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Получение пользователя Telegram
+export const getTelegramUser = () => {
+  if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+    return window.Telegram.WebApp.initDataUnsafe?.user || null
+  }
+  return null
+}
+
 // Проверка, является ли пользователь админом
 export const isAdmin = (telegramUser) => {
   const adminId = import.meta.env.VITE_ADMIN_ID
