@@ -23,23 +23,27 @@ export const isAdmin = (telegramUser) => {
   return telegramUser?.id?.toString() === adminId?.toString()
 }
 
-// Безопасная отправка уведомлений через серверную функцию
+// Отправка уведомлений напрямую (только для разработки)
+// В продакшене нужно использовать Supabase Edge Functions
 export const sendNotification = async (chatId, message, parseMode = 'HTML') => {
   try {
-    const response = await fetch('/api/notify', {
+    const BOT_TOKEN = import.meta.env.VITE_BOT_TOKEN || '8256833464:AAHBzZdX9zRIlxSysqTgoMxdkrzux9vbzNk'
+    
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        chatId,
-        message,
-        parseMode
+        chat_id: chatId,
+        text: message,
+        parse_mode: parseMode
       })
     })
 
     if (!response.ok) {
-      throw new Error('Failed to send notification')
+      const errorData = await response.json()
+      throw new Error(`Telegram API error: ${errorData.description}`)
     }
 
     return await response.json()
