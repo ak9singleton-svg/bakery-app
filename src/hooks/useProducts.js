@@ -11,10 +11,14 @@ export const useProducts = () => {
       setLoading(true)
       setError(null)
       
+      console.log('Loading products...')
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false })
+
+      console.log('Products data:', data)
+      console.log('Products error:', error)
 
       if (error) throw error
       setProducts(data || [])
