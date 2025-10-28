@@ -4,11 +4,73 @@ import { useOrders } from '../hooks/useOrders'
 import { useSettings } from '../hooks/useSettings'
 import { sendNotification } from '../services/supabase'
 import { getTelegramUser, showTelegramBackButton, hideTelegramBackButton } from '../utils/telegram'
-import { getTranslation } from '../utils/translations'
-import { ShoppingCartIcon, HistoryIcon, StoreIcon } from '../components/icons'
-import ProductCard from '../components/ProductCard'
-import CartItem from '../components/CartItem'
-import OrderItem from '../components/OrderItem'
+import { ShoppingCartIcon, HistoryIcon, StoreIcon, PlusIcon, MinusIcon, TrashIcon, RepeatIcon } from '../components/icons'
+
+// Переводы (из вашего оригинального кода)
+const translations = {
+  ru: {
+    shopTitle: "Наша Кондитерская",
+    cart: "Корзина",
+    addToCart: "В корзину",
+    checkout: "Оформить заказ",
+    total: "Итого",
+    myOrders: "Мои заказы",
+    orderHistory: "История заказов",
+    repeatOrder: "Повторить заказ",
+    all: "Все",
+    cartEmpty: "Корзина пуста",
+    noOrders: "У вас пока нет заказов",
+    checkoutTitle: "Оформление заказа",
+    name: "Имя",
+    phone: "Телефон",
+    comment: "Комментарий",
+    commentPlaceholder: "Укажите способ получения и другие детали",
+    yourOrder: "Ваш заказ:",
+    submitOrder: "Отправить заказ",
+    fillRequired: "Пожалуйста, заполните имя и телефон",
+    orderSuccess: "Спасибо за заказ!\n\nМы получили ваш заказ и скоро свяжемся с вами.",
+    paymentInfo: "Реквизиты для оплаты отправлены вам в личные сообщения бота.",
+    paymentNote: "После оформления заказа мы отправим вам реквизиты для оплаты в Kaspi",
+    hello: "Привет",
+    orderStatuses: {
+      new: "Новый",
+      processing: "В работе",
+      completed: "Выполнен",
+      cancelled: "Отменён"
+    }
+  },
+  kk: {
+    shopTitle: "Біздің кондитерлік",
+    cart: "Себет",
+    addToCart: "Себетке",
+    checkout: "Тапсырыс беру",
+    total: "Барлығы",
+    myOrders: "Менің тапсырыстарым",
+    orderHistory: "Тапсырыстар тарихы",
+    repeatOrder: "Тапсырысты қайталау",
+    all: "Барлығы",
+    cartEmpty: "Себет бос",
+    noOrders: "Сізде әлі тапсырыстар жоқ",
+    checkoutTitle: "Тапсырысты рәсімдеу",
+    name: "Аты",
+    phone: "Телефон",
+    comment: "Түсініктеме",
+    commentPlaceholder: "Алу әдісін және басқа мәліметтерді көрсетіңіз",
+    yourOrder: "Сіздің тапсырысыңыз:",
+    submitOrder: "Тапсырыс жіберу",
+    fillRequired: "Атыңызды және телефонды толтырыңыз",
+    orderSuccess: "Тапсырысыңызға рахмет!\n\nТапсырысыңызды алдық, жақын арада хабарласамыз.",
+    paymentInfo: "Төлем деректемелері ботқа жеке хабарларда жіберілді.",
+    paymentNote: "Тапсырысты рәсімдегеннен кейін Kaspi-де төлеу үшін деректемелерді жібереміз",
+    hello: "Сәлем",
+    orderStatuses: {
+      new: "Жаңа",
+      processing: "Орындалуда",
+      completed: "Орындалды",
+      cancelled: "Жойылды"
+    }
+  }
+}
 
 const Shop = () => {
   const [view, setView] = useState('catalog')
@@ -26,7 +88,7 @@ const Shop = () => {
   const { orders, addOrder } = useOrders(telegramUser?.id)
   const { settings } = useSettings()
 
-  const t = (key) => getTranslation(lang, key)
+  const t = translations[lang]
 
   // Инициализация Telegram WebApp
   useEffect(() => {
@@ -328,15 +390,26 @@ const Shop = () => {
 
           <div className="p-4 grid grid-cols-1 gap-4">
             {filteredProducts.map(product => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={addToCart}
-                getProductName={getProductName}
-                getProductDescription={getProductDescription}
-                getProductCategory={getProductCategory}
-                t={t}
-              />
+              <div key={product.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <img 
+                  src={product.image} 
+                  alt={getProductName(product)} 
+                  className="w-full h-48 object-cover" 
+                />
+                <div className="p-4">
+                  <h3 className="font-bold text-lg text-gray-800">{getProductName(product)}</h3>
+                  <p className="text-gray-600 text-sm mt-1">{getProductDescription(product)}</p>
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-xl font-bold text-pink-500">{product.price} ₸</span>
+                    <button 
+                      onClick={() => addToCart(product)} 
+                      className="bg-pink-500 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                    >
+                      <PlusIcon /> {t.addToCart}
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -352,16 +425,47 @@ const Shop = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {orders.map(order => (
-                <OrderItem
-                  key={order.id}
-                  order={order}
-                  onRepeatOrder={repeatOrder}
-                  getStatusText={getStatusText}
-                  t={t}
-                  lang={lang}
-                />
-              ))}
+              {orders.map(order => {
+                const statusInfo = getStatusText(order.status)
+                return (
+                  <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="font-bold text-gray-800">
+                          {lang === 'kk' ? 'Тапсырыс' : 'Заказ'} #{order.id.slice(-6)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(order.date).toLocaleDateString(lang === 'kk' ? 'kk-KZ' : 'ru-RU')}
+                        </p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full ${statusInfo.color}`}>
+                        {statusInfo.text}
+                      </span>
+                    </div>
+                    
+                    <div className="border-t pt-3 mb-3">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="flex justify-between text-sm mb-1">
+                          <span>{item.name} x{item.quantity}</span>
+                          <span className="font-medium">{item.price * item.quantity} ₸</span>
+                        </div>
+                      ))}
+                      <div className="border-t mt-2 pt-2 flex justify-between font-bold">
+                        <span>{t.total}:</span>
+                        <span className="text-pink-500">{order.total} ₸</span>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => repeatOrder(order)}
+                      className="w-full py-2 bg-pink-50 text-pink-600 rounded-lg font-medium flex items-center justify-center gap-2"
+                    >
+                      <RepeatIcon />
+                      {t.repeatOrder}
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
@@ -378,13 +482,40 @@ const Shop = () => {
             <>
               <div className="space-y-4 mb-6">
                 {cart.map(item => (
-                  <CartItem
-                    key={item.id}
-                    item={item}
-                    onUpdateQuantity={updateQuantity}
-                    onRemove={removeFromCart}
-                    t={t}
-                  />
+                  <div key={item.id} className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex gap-4">
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-20 h-20 object-cover rounded-lg" 
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-800">{item.name}</h3>
+                        <p className="text-pink-500 font-bold">{item.price} ₸</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <button 
+                            onClick={() => updateQuantity(item.id, -1)} 
+                            className="p-1 bg-gray-100 rounded"
+                          >
+                            <MinusIcon />
+                          </button>
+                          <span className="font-bold">{item.quantity}</span>
+                          <button 
+                            onClick={() => updateQuantity(item.id, 1)} 
+                            className="p-1 bg-gray-100 rounded"
+                          >
+                            <PlusIcon />
+                          </button>
+                          <button 
+                            onClick={() => removeFromCart(item.id)} 
+                            className="ml-auto text-red-500"
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
