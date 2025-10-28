@@ -13,6 +13,13 @@ function App() {
     if (user && isAdmin(user)) {
       setIsAdminMode(true)
     }
+    
+    // Для тестирования: показываем админку если есть параметр ?admin=true
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('admin') === 'true') {
+      setIsAdminMode(true)
+    }
+    
     setLoading(false)
   }, [])
 
