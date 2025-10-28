@@ -144,6 +144,10 @@ export const translations = {
 }
 
 export const getTranslation = (lang, key) => {
+  if (!key || typeof key !== 'string') {
+    return key || ''
+  }
+  
   const keys = key.split('.')
   let value = translations[lang]
   

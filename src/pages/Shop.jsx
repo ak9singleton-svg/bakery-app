@@ -26,7 +26,7 @@ const Shop = () => {
   const { orders, addOrder } = useOrders(telegramUser?.id)
   const { settings } = useSettings()
 
-  const t = getTranslation(lang)
+  const t = (key) => getTranslation(lang, key)
 
   // Инициализация Telegram WebApp
   useEffect(() => {

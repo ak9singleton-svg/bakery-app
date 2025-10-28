@@ -28,7 +28,7 @@ const Admin = () => {
   const { orders, updateOrderStatus } = useOrders()
   const { settings, saveSettings } = useSettings()
 
-  const t = getTranslation('ru') // Админка всегда на русском
+  const t = (key) => getTranslation('ru', key) // Админка всегда на русском
 
   // Проверка авторизации
   useEffect(() => {
